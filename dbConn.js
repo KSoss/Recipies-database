@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 
 const POSTGRES_HOST = process.env.POSTGRES_HOST || '127.0.0.1'
-const POSTGRES_DB = process.env.POSTGRES_DB || 'recipies_db'
+const POSTGRES_DB = process.env.POSTGRES_DB || 'recipes_db'
 const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || 'password'
 const POSTGRES_USER = process.env.POSTGRES_USER || 'postgres'
 const DATABASE_URL = process.env.DATABASE_URL;

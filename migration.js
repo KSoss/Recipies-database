@@ -39,7 +39,7 @@ pool.query(
   
   //promise to potentially handle node errors
   
-  process.on('unhandledRejection', error => {
-    console.error('Unhandled Promise Rejection:', error);
-    process.exit(1);
-  });
+  // process.on('unhandledRejection', error => {
+  //   console.error('Unhandled Promise Rejection:', error);
+  //   process.exit(1);
+  // });
