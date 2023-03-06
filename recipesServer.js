@@ -24,8 +24,8 @@ app.listen(port, function() {
   console.log('Listening on port', port);
 });
 
-app.get('/recipies', (req, res, next) => {
-  pool.query('SELECT * FROM recipies', (err, result) => {
+app.get('/recipes', (req, res, next) => {
+  pool.query('SELECT * FROM recipes', (err, result) => {
     if (err) {
       return next(err);
     }
