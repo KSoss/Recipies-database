@@ -6,8 +6,7 @@
     "nodemon": "^2.0.21",
     "open-cli": "^7.1.0",
     "pg": "^8.9.0",
-    "sqlite3": "^5.1.4",
-    "yarn": "^1.22.19"
+    "sqlite3": "^5.1.4"
   },
   "devDependencies": {
     "http-server": "^14.1.1",
