@@ -6,41 +6,71 @@ pool.query(
 );
 
 pool.query(
-  `CREATE TABLE IF NOT EXISTS ingredients (
+  `CREATE TABLE ingredients (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL
-  );`
+  )`, (err, result) => {
+    if (err) {
+      console.error('Error making ingredients:', err);
+    } else {
+      console.log('ingredients in!!');
+    }
+  }
 );
 
 pool.query(
-  `CREATE TABLE IF NOT EXISTS recipes (
+  `CREATE TABLE recipes (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     cuisine TEXT NOT NULL
-  );`
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making recipes:', err);
+    } else {
+      console.log('recipes in!!');
+    }
+  }
 );
 
 pool.query(
-  `CREATE TABLE IF NOT EXISTS tags (
+  `CREATE TABLE tags (
     id SERIAL PRIMARY KEY,
     tag TEXT NOT NULL
-  );`
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making tags:', err);
+    } else {
+      console.log('tags in!');
+    }
+  }
 );
 
 pool.query(
-  `CREATE TABLE IF NOT EXISTS recipes_ingredients (
+  `CREATE TABLE recipes_ingredients (
+    id SERIAL PRIMARY KEY,
     recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-    ingredient_id INTEGER REFERENCES ingredients(id) ON DELETE CASCADE,
-    PRIMARY KEY (recipe_id, ingredient_id)
-  );`
+    ingredient_id INTEGER REFERENCES ingredients(id) ON DELETE CASCADE
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making recipes_ingredients:', err);
+    } else {
+      console.log('recipes_ingredients in!!');
+    }
+  }
 );
 
 pool.query(
-  `CREATE TABLE IF NOT EXISTS recipes_tags (
+  `CREATE TABLE recipes_tags (
+    id SERIAL PRIMARY KEY,
     recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
-    PRIMARY KEY (recipe_id, tag_id)
-  );`
+    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE  
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making recipes_tags:', err);
+    } else {
+      console.log('Recipes_tags in!!');
+    }
+  }
 );
   
   //promise to potentially handle node errors
