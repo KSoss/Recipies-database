@@ -33,6 +33,32 @@ app.get('/recipes', (req, res, next) => {
   });
 });
 
+app.get('/ingredients', (req, res, next) => {
+  pool.query('SELECT * FROM ingredients', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+app.get('/RI', (req, res, next) => {
+  pool.query('SELECT * FROM recipes_ingredients', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+app.get('/RT', (req, res, next) => {
+  pool.query('SELECT * FROM recipes_tags', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
 
 
 module.exports = app;

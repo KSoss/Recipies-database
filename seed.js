@@ -24,7 +24,7 @@ pool.query('SELECT COUNT(*) FROM ingredients', (err, result) => {
         ('olive oil'),
         ('onion'), 
         ('bell pepper'), 
-        ('garlic), 
+        ('garlic'), 
         ('paprika'), 
         ('cumin'), 
         ('chili powder'), 
@@ -43,6 +43,8 @@ pool.query('SELECT COUNT(*) FROM ingredients', (err, result) => {
           }
         }
       );
+    } else {
+      console.log('Ingredients already in the database!');
     }
 });
 
@@ -63,10 +65,12 @@ pool.query('SELECT COUNT(*) FROM recipes', (err, result) => {
           if (err) {
             console.log('Error inserting recipes:', err);
           } else {
-            console.log('recipes in!');
+            console.log('Recipes in!');
           }
         }
       );
+    } else {
+      console.log('Recipes already in the database!');
     }
 });
 
@@ -95,35 +99,37 @@ pool.query('SELECT COUNT(*) FROM tags', (err, result) => {
           }
         }
       );
+    } else {
+      console.log('Tags already in the database!');
     }
 });
 
 pool.query(
-    `INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES 
-      (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), 
-      (2, 8), (2, 9), (2, 10), (2, 1), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15), (2, 16), (2, 17), (2, 18), (2, 19),
-      (3, 16), (3, 8), (3, 18), (3, 23), (3, 24), (3, 25), (3, 26)`,
-    (err, result) => {
-      if (err) {
-        console.log('Error inserting data into recipes_ingredients:', err);
-      } else {
-        console.log('Data inserted into recipes_ingredients!');
-      }
+  `INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES 
+  (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), 
+  (2, 8), (2, 9), (2, 10), (2, 1), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15), (2, 16), (2, 17), (2, 18), (2, 19),
+  (3, 16), (3, 8), (3, 18), (3, 23), (3, 24), (3, 25), (3, 26)`,
+  (err, result) => {
+    if (err) {
+      console.log('Error inserting data into recipes_ingredients:', err);
+    } else {
+      console.log('Data inserted into recipes_ingredients!');
     }
-  );
+  }
+);
 
-  pool.query(
-    `INSERT INTO recipes_tags (recipes_id, tags_id) VALUES 
-      (1, 1), 
-      (2, 2), 
-      (3, 3), 
-      (2, 7), 
-      (3, 7)`,
-    (err, result) => {
-      if (err) {
-        console.log('Error inserting data into recipes_tags:', err);
-      } else {
-        console.log('Data inserted into recipes_tags!');
-      }
+pool.query(
+  `INSERT INTO recipes_tags (recipes_id, tags_id) VALUES 
+  (1, 1), 
+  (2, 2), 
+  (3, 3), 
+  (2, 7), 
+  (3, 7)`,
+  (err, result) => {
+    if (err) {
+      console.log('Error inserting data into recipes_tags:', err);
+    } else {
+      console.log('Data inserted into recipes_tags!');
     }
-  );
+  }
+);
