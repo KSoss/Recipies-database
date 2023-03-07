@@ -16,6 +16,6 @@
     "start": "nodemon recipesServer.js",
     "migrate": "node migration.js",
     "seed": "node seed.js",
-    "dev": "open-cli bookServer.html"
+    "html": "node recipeClient.js"
   }
 }
