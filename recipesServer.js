@@ -137,9 +137,7 @@ app.post('/recipes', async (req, res) => {
     // Insert the recipe, cuisine, ingredients, and tags into the database
     await pool.query('INSERT INTO recipes (recipe, cuisine) VALUES ($1, $2)', [recipe, cuisine]);
     for (const ingredient of ingredients) {
-      if (ingredient !== '') {
-        await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING', [ingredient]);
-      }
+        await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1)', [ingredient]);
     }
     for (const tag of tags) {
       if (tag !== '') {
