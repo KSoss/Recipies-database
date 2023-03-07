@@ -106,12 +106,21 @@ app.post('/recipes', async (req, res) => {
 
     // Insert the ingredients into the database
     const ingredientValues = ingredients.filter((ingredient) => ingredient !== '').map((ingredient) => [ingredient]);
-    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) SELECT * FROM unnest($1::text[]) AS ingredient WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient = $2) RETURNING id, ingredient', [ingredientValues, '']);
+    const ingredientInsertResult = await pool.query(
+    `INSERT INTO ingredients (ingredient)
+    SELECT * FROM unnest($1::text[]) AS ingredient
+    WHERE NOT EXISTS 
+    (SELECT 1 FROM ingredients WHERE ingredient = $2)
+    RETURNING id, ingredient`, [ingredientValues, '']);
     const ingredientRows = ingredientInsertResult.rows;
 
     // Insert the tags into the database
     const tagValues = tags.filter((tag) => tag !== '').map((tag) => [tag]);
-    const tagInsertResult = await pool.query('INSERT INTO tags (tag) SELECT * FROM unnest($1::text[]) AS tag WHERE NOT EXISTS (SELECT id FROM tags WHERE tag = $2) RETURNING id, tag', [tagValues, '']);
+    const tagInsertResult = await pool.query(
+    `INSERT INTO tags (tag) 
+    SELECT * FROM unnest($1::text[]) AS tag 
+    WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
+    RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
 
     // Insert the recipe-ingredient relationships into the database
@@ -119,14 +128,14 @@ app.post('/recipes', async (req, res) => {
     for (const ingredientRow of ingredientRows) {
       recipeIngredientValues.push([recipeId, ingredientRow.id]);
     }
-    await pool.query('INSERT INTO recipes_ingredients (recipe_id, ingredient_id) VALUES ($1, $2)', recipeIngredientValues);
+    await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', recipeIngredientValues);
 
     // Insert the recipe-tag relationships into the database
     const recipeTagValues = [];
     for (const tagRow of tagRows) {
       recipeTagValues.push([recipeId, tagRow.id]);
     }
-    await pool.query('INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ($1, $2)', recipeTagValues);
+    await pool.query('INSERT INTO recipe_tags (recipes_id, tags_id) VALUES ($1, $2)', recipeTagValues);
 
     return res.status(201).send('Recipe created successfully');
   } catch (err) {
