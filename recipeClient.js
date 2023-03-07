@@ -10,29 +10,34 @@ $(document).ready(function(){
 })
 
 
+
 function getAllRecipes() {
-    const pool = new Pool(dbConfig);
-    pool.query('SELECT * FROM Recipes', (err, result) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      const data = result.rows;
-      for (let i = 0; i < data.length; i++) {
-        const author = data[i].author;
-        const title = data[i].name;
-        const genre = data[i].genre;
-        const ID = data[i].id;
-        console.log(author, title, genre, ID);
-        pushBookInfo(author, title, genre, ID);
-      }
+    const localUrl = 'http://localhost:8000/recipes';
+    const remoteUrl = 'https://food-and-you.onrender.com/recipes';
+
+    $.get(localUrl, function(data) {
+      // display the data on the page
+      console.log(data);
+      seperate(data)
+
+    }).fail(function() {
+      // try the remote URL if the local URL fails
+      tryRemoteUrl();
     });
+  
+    function tryRemoteUrl() {
+      $.get(remoteUrl, function(data) {
+        // display the data on the page
+        console.log(data);
+        seperate(data)
+      }).fail(function() {
+        console.error('Local and remote unavailable');
+      });
+    }
   }
 
-function getAllBooks() { $.get('http://localhost:8000/books', function(data) {
-    // display the data on the page
-    console.log(data)
-
+  function seperate(data) {
+ 
     for (let i = 0; i < data.length; i++) {
         
         const author = data[i].author
@@ -43,9 +48,10 @@ function getAllBooks() { $.get('http://localhost:8000/books', function(data) {
         pushBookInfo(author, title, genre, ID)
     }
 
-    })
-}
-  
+  }
+
+
+
 function pushBookInfo(author, title, genre, ID) {
 
     let $bookcard = $('<div></div>')
