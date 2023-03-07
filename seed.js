@@ -7,7 +7,7 @@ async function insertIngredients() {
   const count = parseInt(result.rows[0].count);
   if (count === 0) {
     await pool.query(
-      `INSERT INTO ingredients (name) VALUES 
+      `INSERT INTO ingredients (ingredient) VALUES 
       ('eggs'), 
       ('flour'), 
       ('milk'), 
@@ -43,7 +43,7 @@ async function insertRecipes() {
   const count = parseInt(result.rows[0].count);
   if (count === 0) {
     await pool.query(
-      `INSERT INTO recipes (name, cuisine) VALUES
+      `INSERT INTO recipes (recipe, cuisine) VALUES
       ('Old Fashion Pancakes', 'American'),
       ('Shakshuka', 'Middle Eastern'),
       ('Basic Burger', 'American')`

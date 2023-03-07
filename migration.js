@@ -11,7 +11,7 @@ pool.query(`DROP TABLE IF EXISTS recipes_tags, recipes_ingredients, tags, recipe
       console.log('Creating tables...');
       pool.query(`CREATE TABLE ingredients (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL
+        ingredient TEXT NOT NULL
       )`, (err, result) => {
         if (err) {
           console.error('Error making ingredients:', err);
@@ -22,7 +22,7 @@ pool.query(`DROP TABLE IF EXISTS recipes_tags, recipes_ingredients, tags, recipe
       
       pool.query(`CREATE TABLE recipes (
         id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
+        recipe TEXT NOT NULL,
         cuisine TEXT NOT NULL
       )`, (err, result) => {
         if (err) {
