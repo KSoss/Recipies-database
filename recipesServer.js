@@ -71,13 +71,18 @@ app.get('/RT', (req, res, next) => {
 
 // needs to be tested
 app.get('/everything', (req, res, next) => {
-  pool.query(`SELECT r.name AS recipe_name, array_agg(i.name) AS ingredients, array_agg(t.name) AS tags
+
+  pool.query(`SELECT r.recipe AS recipe_name, array_agg(i.ingredient) AS ingredients, array_agg(t.tag) AS tags
   FROM recipes r
   LEFT JOIN recipes_ingredients ri ON r.id = ri.recipe_id
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
   LEFT JOIN recipes_tags rt ON r.id = rt.recipe_id
   LEFT JOIN tags t ON rt.tags_id = t.id
-  GROUP BY r.name;`, (err, result) => {
+  GROUP BY r.recipie;`, (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
   })
 })
 
@@ -88,7 +93,7 @@ app.post('/recipes', async (req, res) => {
     const { recipe, cuisine, ingredients, tags } = req.body;
 
     // Check if the recipe already exists
-    const recipeResult = await pool.query('SELECT * FROM recipes WHERE name = $1', [recipe]);
+    const recipeResult = await pool.query('SELECT * FROM recipes WHERE recipe = $1', [recipe]);
     if (recipeResult.rows.length > 0) {
       return res.status(400).send('Recipe already exists');
     }
@@ -99,12 +104,12 @@ app.post('/recipes', async (req, res) => {
 
     // Insert the ingredients into the database
     const ingredientValues = ingredients.filter((ingredient) => ingredient !== '').map((ingredient) => [ingredient]);
-    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, name', ingredientValues);
+    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, ingredient', ingredientValues);
     const ingredientRows = ingredientInsertResult.rows;
 
     // Insert the tags into the database
     const tagValues = tags.filter((tag) => tag !== '').map((tag) => [tag]);
-    const tagInsertResult = await pool.query('INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, name', tagValues);
+    const tagInsertResult = await pool.query('INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, tag', tagValues);
     const tagRows = tagInsertResult.rows;
 
     // Insert the recipe-ingredient relationships into the database
