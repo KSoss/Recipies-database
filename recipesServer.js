@@ -70,7 +70,7 @@ app.get('/RT', (req, res, next) => {
 
 app.get('/everything', (req, res, next) => {
 
-  pool.query(`SELECT r.recipe AS recipe_name, 
+  pool.query(`SELECT r.recipe AS recipe_name, r.cuisine,
   array_agg(DISTINCT i.ingredient) AS ingredients, 
   array_agg(DISTINCT t.tag) AS tags
   FROM recipes r
@@ -93,7 +93,7 @@ app.get('/recipes/:id', (req, res, next) => {
   }
   console.log("recipe: ", id);
 
-  pool.query(`SELECT r.recipe AS recipe_name, 
+  pool.query(`SELECT r.recipe AS recipe_name, r.cuisine,
   array_agg(DISTINCT i.ingredient) AS ingredients, 
   array_agg(DISTINCT t.tag) AS tags
   FROM recipes r
