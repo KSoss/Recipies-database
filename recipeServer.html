@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="recipeClient.js"></script>
+  <title>recipe Catalog</title>
+</head>
+<body>
+  <h1>Recipe Catalog</h1>
+
+  <!-- display existing recipe -->
+
+  <ul id="recipe-list"></ul>
+  <input type="submit" id="showrecipe" value="Show recipes we know">
+
+  <!-- add new recipe -->
+  <h2>Add New recipe</h2>
+  <form id="add-recipe-form">
+    <div>
+      <label for="recipe-input">Recipe:</label>
+      <input type="text" id="recipe-input" name="recipe-input">
+    </div>
+    <div>
+      <label for="Cusine-input">Cusine:</label>
+      <input type="text" id="Cusine-input" name="genre-input">
+    </div>
+    <div>
+      <label for="Ingredients-input">Ingredients:</label>
+      <input type="text" id="ingredient-input" name="ingredient-input">
+    </div>
+    <div>
+      <input id = "addrecipe" type="submit" value="Add recipe">
+    </div>
+  </form>
+
+  <h2>Existing recipes</h2>
+    <div id="container" class="container"></div>
+
+  
+</body>
+</html>
