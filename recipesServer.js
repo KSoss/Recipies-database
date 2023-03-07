@@ -72,7 +72,9 @@ app.get('/RT', (req, res, next) => {
 // needs to be tested
 app.get('/everything', (req, res, next) => {
 
-  pool.query(`SELECT r.recipe AS recipe_name, array_agg(i.ingredient) AS ingredients, array_agg(t.tag) AS tags
+  pool.query(`SELECT r.recipe AS recipe_name, 
+  array_agg(DISTINCT i.ingredient) AS ingredients, 
+  array_agg(DISTINCT t.tag) AS tags
   FROM recipes r
   LEFT JOIN recipes_ingredients ri ON r.id = ri.recipes_id
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
@@ -117,7 +119,7 @@ app.post('/recipes', async (req, res) => {
     for (const ingredientRow of ingredientRows) {
       recipeIngredientValues.push([recipeId, ingredientRow.id]);
     }
-    await pool.query('INSERT INTO recipe_ingredients (recipe_id, ingredient_id) VALUES ($1, $2)', recipeIngredientValues);
+    await pool.query('INSERT INTO recipes_ingredients (recipe_id, ingredient_id) VALUES ($1, $2)', recipeIngredientValues);
 
     // Insert the recipe-tag relationships into the database
     const recipeTagValues = [];
