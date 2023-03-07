@@ -128,70 +128,24 @@ app.post('/recipes', async (req, res) => {
   try {
     const { recipe, cuisine, ingredients, tags } = req.body;
 
-    console.log(recipe)
-    console.log(cuisine)
-    console.log(ingredients)
-    console.log(tags)
-
     // Check if the recipe already exists
     const recipeResult = await pool.query('SELECT * FROM recipes WHERE recipe = $1', [recipe]);
     if (recipeResult.rows.length > 0) {
       return res.status(400).send('Recipe already exists');
     }
 
-    // Insert the recipe into the database
-    const recipeInsertResult = await pool.query('INSERT INTO recipes (recipe, cuisine) VALUES ($1, $2) RETURNING id', [recipe, cuisine]);
-    const recipeId = recipeInsertResult.rows[0].id;
-    console.log('recipe name inserted')
-
-    // Insert the ingredients into the database
-    const ingredientIds = [];
+    // Insert the recipe, cuisine, ingredients, and tags into the database
+    await pool.query('INSERT INTO recipes (recipe, cuisine) VALUES ($1, $2)', [recipe, cuisine]);
     for (const ingredient of ingredients) {
       if (ingredient !== '') {
-        console.log(ingredient)
-        const ingredientInsertResult = await pool.query(
-          'INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
-          [ingredient]
-        );
-        if (ingredientInsertResult.rows.length > 0) {
-          console.log(ingredientInsertResult)
-          ingredientIds.push(ingredientInsertResult.rows[0].id);
-        } else {
-          const existingIngredientResult = await pool.query('SELECT id FROM ingredients WHERE ingredient = $1', [ingredient]);
-          if (existingIngredientResult.rows.length > 0) {
-            ingredientIds.push(existingIngredientResult.rows[0].id);
-            console.log('ingredient ids: ', ingredientIds)
-          }
-        }
+        await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING', [ingredient]);
       }
     }
-
-    // Insert the tags into the database
-    const tagIds = [];
     for (const tag of tags) {
       if (tag !== '') {
-        const tagInsertResult = await pool.query(
-          'INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
-          [tag]
-        );
-        if (tagInsertResult.rows.length > 0) {
-          tagIds.push(tagInsertResult.rows[0].id);
-        } else {
-          const existingTagResult = await pool.query('SELECT id FROM tags WHERE tag = $1', [tag]);
-          if (existingTagResult.rows.length > 0) {
-            tagIds.push(existingTagResult.rows[0].id);
-          }
-        }
+        await pool.query('INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING', [tag]);
       }
     }
-
-    // Insert the recipe-ingredient relationships into the database
-    const recipeIngredientValues = ingredientIds.map((ingredientId) => [recipeId, ingredientId]);
-    await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', recipeIngredientValues);
-
-    // Insert the recipe-tag relationships into the database
-    const recipeTagValues = tagIds.map((tagId) => [recipeId, tagId]);
-    await pool.query('INSERT INTO recipe_tags (recipes_id, tags_id) VALUES ($1, $2)', recipeTagValues);
 
     return res.status(201).send('Recipe created successfully');
   } catch (err) {
