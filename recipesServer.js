@@ -107,20 +107,19 @@ app.post('/recipes', async (req, res) => {
     // Insert the ingredients into the database
     const ingredientValues = ingredients.filter((ingredient) => ingredient !== '').map((ingredient) => [ingredient]);
     const ingredientInsertResult = await pool.query(
-    `INSERT INTO ingredients (ingredient)
-    SELECT * FROM unnest($1::text[]) AS ingredient
-    WHERE NOT EXISTS 
-    (SELECT 1 FROM ingredients WHERE ingredient = $2)
-    RETURNING id, ingredient`, [ingredientValues, '']);
+        `INSERT INTO ingredients (ingredient)
+        SELECT * FROM unnest($1::text[]) AS ingredient
+        WHERE NOT EXISTS 
+        (SELECT 1 FROM ingredients WHERE ingredient = $1)
+        RETURNING id, ingredient`, [ingredientValues]);
     const ingredientRows = ingredientInsertResult.rows;
-
-    // Insert the tags into the database
+    
     const tagValues = tags.filter((tag) => tag !== '').map((tag) => [tag]);
     const tagInsertResult = await pool.query(
-    `INSERT INTO tags (tag) 
-    SELECT * FROM unnest($1::text[]) AS tag 
-    WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
-    RETURNING id, tag`, [tagValues]);
+        `INSERT INTO tags (tag) 
+        SELECT * FROM unnest($1::text[]) AS tag 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
+        RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
 
     // Insert the recipe-ingredient relationships into the database
