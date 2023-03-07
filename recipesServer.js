@@ -69,7 +69,6 @@ app.get('/RT', (req, res, next) => {
   });
 });
 
-// needs to be tested
 app.get('/everything', (req, res, next) => {
 
   pool.query(`SELECT r.recipe AS recipe_name, 
@@ -85,6 +84,41 @@ app.get('/everything', (req, res, next) => {
       return next(err);
     }
     res.json(result.rows);
+  })
+})
+
+app.get('/recipes/:id', (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+  if(!Number.isInteger(id)) {
+    res.status(404).send("That is not a number silly")
+  }
+  console.log("recipe: ", id);
+
+  pool.query(`SELECT r.recipe AS recipe_name, 
+  array_agg(DISTINCT i.ingredient) AS ingredients, 
+  array_agg(DISTINCT t.tag) AS tags
+  FROM recipes r
+  LEFT JOIN recipes_ingredients ri ON r.id = ri.recipes_id
+  LEFT JOIN ingredients i ON ri.ingredients_id = i.id
+  LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
+  LEFT JOIN tags t ON rt.tags_id = t.id
+  GROUP BY r.recipe;
+  WHERE r.id = $1`, [id], (err, result) => {
+    if (err) {
+      return next(err);
+    }
+
+  const recipe = result.rows[0];
+
+  console.log("Recipe ", id, "values", recipe)
+
+  if (book) {
+    console.log('Book retrieved')
+    return res.send(book);
+  } else {
+    return res.status(404).send("We dont have that ID")
+  }
+
   })
 })
 
@@ -111,14 +145,14 @@ app.post('/recipes', async (req, res) => {
         SELECT * FROM unnest($1::text[]) AS ingredient
         WHERE NOT EXISTS 
         (SELECT 1 FROM ingredients WHERE ingredient = $1)
-        RETURNING id, ingredient`, [ingredientValues]);
-    const ingredientRows = ingredientInsertResult.rows;
+        RETURNING id`, [ingredientValues]);
+    const ingredientIds = ingredientInsertResult.rows.map(row => row.id);
     
     const tagValues = tags.filter((tag) => tag !== '').map((tag) => [tag]);
     const tagInsertResult = await pool.query(
         `INSERT INTO tags (tag) 
         SELECT * FROM unnest($1::text[]) AS tag 
-        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag IN ANY($1::text[])) 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
         RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
 
@@ -142,5 +176,31 @@ app.post('/recipes', async (req, res) => {
     return res.status(500).send('Internal server error');
   }
 });
+
+app.delete("/recipe/:id", (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+  if (!Number.isInteger(id)){
+    return res.status(400).send("No book found with that ID");
+  }
+  pool.query('DELETE FROM recipes WHERE id = $1 RETURNING *', [id], (err, data) => {
+    if (err){
+      return next(err);
+    }
+    const deletedRecipe = data.rows[0];
+    console.log(deletedRecipe);
+    if (deletedRecipe){
+      // respond with deleted row
+      res.send(deletedRecipe);
+    } else {
+      res.status(404).send("No recipe found with that ID");
+    }
+  });
+});
+
+app.use((err, req, res, next) => {
+  console.log('General next error:', err);
+  res.sendStatus(404);
+});
+
 
 module.exports = app;
