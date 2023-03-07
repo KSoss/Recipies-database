@@ -18,6 +18,8 @@ app.use(bodyParser.json());
 const cors = require('cors');
 app.use(cors());
 
+const recipeClient = require('./recipeServer.html')
+const recipejs = require('recipeClient.js')
 
 // listen command
 app.listen(port, function() {
@@ -68,7 +70,7 @@ app.get('/RT', (req, res, next) => {
     res.json(result.rows);
   });
 });
-//GTG
+
 app.get('/everything', (req, res, next) => {
 
   pool.query(`SELECT r.recipe AS recipe_name, 
@@ -86,7 +88,7 @@ app.get('/everything', (req, res, next) => {
     res.json(result.rows);
   })
 })
-//GTG
+
 app.get('/recipes/:id', (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if(!Number.isInteger(id)) {
@@ -181,7 +183,7 @@ app.post('/recipes', async (req, res) => {
 
       // Create relationship between recipe and tag
       const recipeTagResult = await pool.query(
-        'INSERT INTO recipe_tags (recipe_id, tag_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2)',
+        'INSERT INTO recipes_tags (recipe_id, tag_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2)',
         [recipeId, tagId]
       );
       console.log('recipe-tag relationship inserted');
@@ -194,7 +196,83 @@ app.post('/recipes', async (req, res) => {
   }
 });
 
-// GTG
+// I want to sleep
+
+app.put('/recipes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { recipe, cuisine, ingredients, tags } = req.body;
+
+    // Check if the recipe exists
+    const recipeResult = await pool.query('SELECT * FROM recipes WHERE id = $1', [id]);
+    if (recipeResult.rows.length === 0) {
+      return res.status(404).send('Recipe not found');
+    }
+
+    // Update the recipe in the database
+    const recipeUpdateResult = await pool.query('UPDATE recipes SET recipe = $1, cuisine = $2 WHERE id = $3', [recipe, cuisine, id]);
+    console.log('recipe updated');
+
+    // Delete old recipe-ingredient relationships
+    await pool.query('DELETE FROM recipes_ingredients WHERE recipes_id = $1', [id]);
+
+    // Insert new recipe-ingredient relationships
+    for (let i = 0; i < ingredients.length; i++) {
+      const ingredient = ingredients[i];
+      if (ingredient !== '') {
+        const ingredientInsertResult = await pool.query(
+          'INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
+          [ingredient]
+        );
+        let ingredientId;
+        if (ingredientInsertResult.rows.length > 0) {
+          ingredientId = ingredientInsertResult.rows[0].id;
+        } else {
+          const existingIngredientResult = await pool.query('SELECT id FROM ingredients WHERE ingredient = $1', [ingredient]);
+          if (existingIngredientResult.rows.length > 0) {
+            ingredientId = existingIngredientResult.rows[0].id;
+          }
+        }
+        if (ingredientId) {
+          await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', [id, ingredientId]);
+        }
+      }
+    }
+
+    // Delete old recipe-tag relationships
+    await pool.query('DELETE FROM recipe_tags WHERE recipes_id = $1', [id]);
+
+    // Insert new recipe-tag relationships
+    for (let i = 0; i < tags.length; i++) {
+      const tag = tags[i];
+      if (tag !== '') {
+        const tagInsertResult = await pool.query(
+          'INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
+          [tag]
+        );
+        let tagId;
+        if (tagInsertResult.rows.length > 0) {
+          tagId = tagInsertResult.rows[0].id;
+        } else {
+          const existingTagResult = await pool.query('SELECT id FROM tags WHERE tag = $1', [tag]);
+          if (existingTagResult.rows.length > 0) {
+            tagId = (existingTagResult.rows[0].id);
+          }
+        }
+        if (tagId) {
+          await pool.query('INSERT INTO recipe_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
+        }
+      }
+    }
+
+    return res.status(200).send('Recipe updated successfully');
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+
 app.delete("/recipes/:id", (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if (!Number.isInteger(id)){
@@ -204,12 +282,7 @@ app.delete("/recipes/:id", (req, res, next) => {
     if (err){
       return next(err);
     } else {
-      const deletedRecipe = data.rows[0];
-      console.log(deletedRecipe);
-      if (deletedRecipe){
-        // respond with deleted row
-        res.send(deletedRecipe);
-      }
+        res.send('DELETED!');
     }
   });
 });
