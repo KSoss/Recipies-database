@@ -78,7 +78,7 @@ app.get('/everything', (req, res, next) => {
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
   LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
   LEFT JOIN tags t ON rt.tags_id = t.id
-  GROUP BY r.recipie;`, (err, result) => {
+  GROUP BY r.recipe;`, (err, result) => {
     if (err) {
       return next(err);
     }
@@ -104,7 +104,7 @@ app.post('/recipes', async (req, res) => {
 
     // Insert the ingredients into the database
     const ingredientValues = ingredients.filter((ingredient) => ingredient !== '').map((ingredient) => [ingredient]);
-    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) SELECT * FROM unnest($1) AS ingredient WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient = $2) RETURNING id, ingredient', [ingredientValues, '']);
+    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) SELECT * FROM unnest($1::text[]) AS ingredient WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient = $2) RETURNING id, ingredient', [ingredientValues, '']);
     const ingredientRows = ingredientInsertResult.rows;
 
     // Insert the tags into the database
