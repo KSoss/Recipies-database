@@ -118,7 +118,7 @@ app.post('/recipes', async (req, res) => {
     const tagInsertResult = await pool.query(
         `INSERT INTO tags (tag) 
         SELECT * FROM unnest($1::text[]) AS tag 
-        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag IN ANY($1::text[])) 
         RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
 
