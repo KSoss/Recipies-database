@@ -68,7 +68,7 @@ app.get('/RT', (req, res, next) => {
     res.json(result.rows);
   });
 });
-
+//GTG
 app.get('/everything', (req, res, next) => {
 
   pool.query(`SELECT r.recipe AS recipe_name, 
@@ -86,7 +86,7 @@ app.get('/everything', (req, res, next) => {
     res.json(result.rows);
   })
 })
-
+//GTG
 app.get('/recipes/:id', (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if(!Number.isInteger(id)) {
@@ -143,7 +143,7 @@ app.post('/recipes', async (req, res) => {
     const ingredientInsertResult = await pool.query(
         `INSERT INTO ingredients (ingredient)
         SELECT * FROM unnest($1::text[]) AS ingredient
-        WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient && $1::text[])
+        WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient @> $1::text[])
         RETURNING id`, [ingredientValues]);
     const ingredientIds = ingredientInsertResult.rows.map(row => row.id);
     
@@ -151,35 +151,35 @@ app.post('/recipes', async (req, res) => {
     const tagInsertResult = await pool.query(
         `INSERT INTO tags (tag) 
         SELECT * FROM unnest($1::text[]) AS tag 
-        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag && $1::text[]) 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag @> $1::text[]) 
         RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
-
+    
     // Insert the recipe-ingredient relationships into the database
     const recipeIngredientValues = [];
-    for (const ingredientRow of ingredientRows) {
-      recipeIngredientValues.push([recipeId, ingredientRow.id]);
+    for (const ingredientId of ingredientIds) {
+      recipeIngredientValues.push([recipeId, ingredientId]);
     }
     await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', recipeIngredientValues);
-
+    
     // Insert the recipe-tag relationships into the database
     const recipeTagValues = [];
     for (const tagRow of tagRows) {
       recipeTagValues.push([recipeId, tagRow.id]);
     }
     await pool.query('INSERT INTO recipe_tags (recipes_id, tags_id) VALUES ($1, $2)', recipeTagValues);
-
+    
     return res.status(201).send('Recipe created successfully');
   } catch (err) {
     console.error(err);
     return res.status(500).send('Internal server error');
   }
 });
-
-app.delete("/recipe/:id", (req, res, next) => {
+// GTG
+app.delete("/recipes/:id", (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if (!Number.isInteger(id)){
-    return res.status(400).send("No book found with that ID");
+    return res.status(400).send("No recipe found with that ID");
   }
   pool.query('DELETE FROM recipes WHERE id = $1', [id], (err, data) => {
     if (err){
