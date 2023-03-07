@@ -102,8 +102,8 @@ app.get('/recipes/:id', (req, res, next) => {
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
   LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
   LEFT JOIN tags t ON rt.tags_id = t.id
-  GROUP BY r.recipe;
-  WHERE r.id = $1`, [id], (err, result) => {
+  WHERE r.id = $1
+  GROUP BY r.recipe;`, [id], (err, result) => {
     if (err) {
       return next(err);
     }
@@ -143,8 +143,7 @@ app.post('/recipes', async (req, res) => {
     const ingredientInsertResult = await pool.query(
         `INSERT INTO ingredients (ingredient)
         SELECT * FROM unnest($1::text[]) AS ingredient
-        WHERE NOT EXISTS 
-        (SELECT 1 FROM ingredients WHERE ingredient = $1)
+        WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient && $1::text[])
         RETURNING id`, [ingredientValues]);
     const ingredientIds = ingredientInsertResult.rows.map(row => row.id);
     
@@ -152,7 +151,7 @@ app.post('/recipes', async (req, res) => {
     const tagInsertResult = await pool.query(
         `INSERT INTO tags (tag) 
         SELECT * FROM unnest($1::text[]) AS tag 
-        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1::text[])) 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag && $1::text[]) 
         RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
 
@@ -182,7 +181,7 @@ app.delete("/recipe/:id", (req, res, next) => {
   if (!Number.isInteger(id)){
     return res.status(400).send("No book found with that ID");
   }
-  pool.query('DELETE FROM recipes WHERE id = $1 RETURNING *', [id], (err, data) => {
+  pool.query('DELETE FROM recipes WHERE id = $1', [id], (err, data) => {
     if (err){
       return next(err);
     }
