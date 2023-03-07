@@ -1,3 +1,6 @@
+const { Pool } = require('pg');
+const pool = require('./dbConn');
+
 const dropTablesQuery = `
   DROP TABLE IF EXISTS recipes_tags, recipes_ingredients, tags, recipes, ingredients CASCADE;
 `;
