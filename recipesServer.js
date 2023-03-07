@@ -74,9 +74,9 @@ app.get('/everything', (req, res, next) => {
 
   pool.query(`SELECT r.recipe AS recipe_name, array_agg(i.ingredient) AS ingredients, array_agg(t.tag) AS tags
   FROM recipes r
-  LEFT JOIN recipes_ingredients ri ON r.id = ri.recipe_id
+  LEFT JOIN recipes_ingredients ri ON r.id = ri.recipes_id
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
-  LEFT JOIN recipes_tags rt ON r.id = rt.recipe_id
+  LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
   LEFT JOIN tags t ON rt.tags_id = t.id
   GROUP BY r.recipie;`, (err, result) => {
     if (err) {
@@ -104,12 +104,12 @@ app.post('/recipes', async (req, res) => {
 
     // Insert the ingredients into the database
     const ingredientValues = ingredients.filter((ingredient) => ingredient !== '').map((ingredient) => [ingredient]);
-    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, ingredient', ingredientValues);
+    const ingredientInsertResult = await pool.query('INSERT INTO ingredients (ingredient) SELECT * FROM unnest($1) AS ingredient WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient = $2) RETURNING id, ingredient', [ingredientValues, '']);
     const ingredientRows = ingredientInsertResult.rows;
 
     // Insert the tags into the database
     const tagValues = tags.filter((tag) => tag !== '').map((tag) => [tag]);
-    const tagInsertResult = await pool.query('INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id, tag', tagValues);
+    const tagInsertResult = await pool.query('INSERT INTO tags (tag) SELECT * FROM unnest($1::text[]) AS tag WHERE NOT EXISTS (SELECT id FROM tags WHERE tag = $2) RETURNING id, tag', [tagValues, '']);
     const tagRows = tagInsertResult.rows;
 
     // Insert the recipe-ingredient relationships into the database
