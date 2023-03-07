@@ -112,9 +112,9 @@ app.get('/recipes/:id', (req, res, next) => {
 
   console.log("Recipe ", id, "values", recipe)
 
-  if (book) {
-    console.log('Book retrieved')
-    return res.send(book);
+  if (recipe) {
+    console.log('Recipe retrieved')
+    return res.send(recipe);
   } else {
     return res.status(404).send("We dont have that ID")
   }
