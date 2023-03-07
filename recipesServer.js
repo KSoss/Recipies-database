@@ -142,16 +142,19 @@ app.post('/recipes', async (req, res) => {
     // Insert the recipe into the database
     const recipeInsertResult = await pool.query('INSERT INTO recipes (recipe, cuisine) VALUES ($1, $2) RETURNING id', [recipe, cuisine]);
     const recipeId = recipeInsertResult.rows[0].id;
+    console.log('recipe name inserted')
 
     // Insert the ingredients into the database
     const ingredientIds = [];
     for (const ingredient of ingredients) {
       if (ingredient !== '') {
+        console.log(ingredient)
         const ingredientInsertResult = await pool.query(
           'INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
           [ingredient]
         );
         if (ingredientInsertResult.rows.length > 0) {
+          console.log(ingredientInsertResult)
           ingredientIds.push(ingredientInsertResult.rows[0].id);
         } else {
           const existingIngredientResult = await pool.query('SELECT id FROM ingredients WHERE ingredient = $1', [ingredient]);
