@@ -83,7 +83,7 @@ async function insertRecipesIngredients() {
       `INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES 
         (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), 
         (2, 8), (2, 9), (2, 10), (2, 1), (2, 11), (2, 12), (2, 13), (2, 14), (2, 15), (2, 16), (2, 17), (2, 18), (2, 19),
-        (3, 16), (3, 8), (3, 18), (3, 23), (3, 24), (3, 25), (3, 26)`
+        (3, 10), (3, 16), (3, 20), (3, 21), (3, 22)`
     );
     console.log('Data inserted into recipes_ingredients!');
     client.release();
@@ -120,5 +120,4 @@ insertTags();
 setTimeout(async () => {
   await insertRecipesIngredients();
   await insertRecipesTags();
-  pool.end();
 }, 2000);
