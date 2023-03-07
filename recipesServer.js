@@ -143,7 +143,7 @@ app.post('/recipes', async (req, res) => {
     const ingredientInsertResult = await pool.query(
         `INSERT INTO ingredients (ingredient)
         SELECT * FROM unnest($1::text[]) AS ingredient
-        WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient @> $1::text[])
+        WHERE NOT EXISTS (SELECT 1 FROM ingredients WHERE ingredient = ANY($1))
         RETURNING id`, [ingredientValues]);
     const ingredientIds = ingredientInsertResult.rows.map(row => row.id);
     
@@ -151,7 +151,7 @@ app.post('/recipes', async (req, res) => {
     const tagInsertResult = await pool.query(
         `INSERT INTO tags (tag) 
         SELECT * FROM unnest($1::text[]) AS tag 
-        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag @> $1::text[]) 
+        WHERE NOT EXISTS (SELECT 1 FROM tags WHERE tag = ANY($1)) 
         RETURNING id, tag`, [tagValues]);
     const tagRows = tagInsertResult.rows;
     
@@ -180,18 +180,17 @@ app.delete("/recipes/:id", (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if (!Number.isInteger(id)){
     return res.status(400).send("No recipe found with that ID");
-  }
+  } else {}
   pool.query('DELETE FROM recipes WHERE id = $1', [id], (err, data) => {
     if (err){
       return next(err);
-    }
-    const deletedRecipe = data.rows[0];
-    console.log(deletedRecipe);
-    if (deletedRecipe){
-      // respond with deleted row
-      res.send(deletedRecipe);
     } else {
-      res.status(404).send("No recipe found with that ID");
+      const deletedRecipe = data.rows[0];
+      console.log(deletedRecipe);
+      if (deletedRecipe){
+        // respond with deleted row
+        res.send(deletedRecipe);
+      }
     }
   });
 });
