@@ -1,117 +1,85 @@
 const { Pool } = require('pg');
 const pool = require('./dbConn');
 
-const dropTablesQuery = `
-  DROP TABLE IF EXISTS recipes_tags, recipes_ingredients, tags, recipes, ingredients CASCADE;
-`;
+pool.query(
+  `DROP TABLE IF EXISTS recipes_tags, recipes_ingredients, tags, recipes, ingredients CASCADE;`
+);
 
-const createIngredientsTableQuery = `
-  CREATE TABLE ingredients (
+pool.query(
+  `CREATE TABLE ingredients (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL
-  )
-`;
+  )`, (err, result) => {
+    if (err) {
+      console.error('Error making ingredients:', err);
+    } else {
+      console.log('ingredients in!!');
+    }
+  }
+);
 
-const createRecipesTableQuery = `
-  CREATE TABLE recipes (
+pool.query(
+  `CREATE TABLE recipes (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     cuisine TEXT NOT NULL
-  )
-`;
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making recipes:', err);
+    } else {
+      console.log('recipes in!!');
+    }
+  }
+);
 
-const createTagsTableQuery = `
-  CREATE TABLE tags (
+pool.query(
+  `CREATE TABLE tags (
     id SERIAL PRIMARY KEY,
     tag TEXT NOT NULL
-  )
-`;
-
-const createRecipesIngredientsTableQuery = `
-  CREATE TABLE recipes_ingredients (
-    id SERIAL PRIMARY KEY,
-    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-    ingredient_id INTEGER REFERENCES ingredients(id) ON DELETE CASCADE
-  )
-`;
-
-const createRecipesTagsTableQuery = `
-  CREATE TABLE recipes_tags (
-    id SERIAL PRIMARY KEY,
-    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
-    tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE
-  )
-`;
-
-// Define a function to execute the drop tables query
-const dropTables = (callback) => {
-  pool.query(dropTablesQuery, (error, result) => {
-    if (error) {
-      console.error('Error dropping tables:', error);
+  );`, (err, result) => {
+    if (err) {
+      console.error('Error making tags:', err);
     } else {
-      console.log('Tables dropped successfully.');
+      console.log('tags in!');
     }
-    callback(error, result);
-  });
-};
-
-// Define a function to execute the create tables queries
-const createTables = (callback) => {
-  pool.query(createIngredientsTableQuery, (error, result) => {
-    if (error) {
-      console.error('Error creating ingredients table:', error);
-    } else {
-      console.log('Ingredients table created successfully.');
-    }
-  });
-
-  pool.query(createRecipesTableQuery, (error, result) => {
-    if (error) {
-      console.error('Error creating recipes table:', error);
-    } else {
-      console.log('Recipes table created successfully.');
-    }
-  });
-
-  pool.query(createTagsTableQuery, (error, result) => {
-    if (error) {
-      console.error('Error creating tags table:', error);
-    } else {
-      console.log('Tags table created successfully.');
-    }
-  });
-
-  callback();
-};
-
-// Define a function to execute the create recipes-ingredients and recipes-tags tables queries
-const createJoinTables = (callback) => {
-  pool.query(createRecipesIngredientsTableQuery, (error, result) => {
-    if (error) {
-      console.error('Error creating recipes_ingredients table:', error);
-    } else {
-      console.log('Recipes_ingredients table created successfully.');
-    }
-  });
-
-  pool.query(createRecipesTagsTableQuery, (error, result) => {
-    if (error) {
-      console.error('Error creating recipes_tags table:', error);
-    } else {
-      console.log('Recipes_tags table created successfully.');
-    }
-  });
-
-  callback();
-};
-
-// Call the functions in sequence
-dropTables((error, result) => {
-  if (!error) {
-    createTables(() => {
-      createJoinTables(() => {
-        console.log('Migration completed successfully!');
-      });
-    });
   }
-});
+);
+
+function createJoinTables() {
+  pool.query(
+    `CREATE TABLE recipes_ingredients (
+      id SERIAL PRIMARY KEY,
+      recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+      ingredient_id INTEGER REFERENCES ingredients(id) ON DELETE CASCADE
+    );`, (err, result) => {
+      if (err) {
+        console.error('Error making recipes_ingredients:', err);
+      } else {
+        console.log('recipes_ingredients in!!');
+      }
+    }
+  );
+
+  pool.query(
+    `CREATE TABLE recipes_tags (
+      id SERIAL PRIMARY KEY,
+      recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+      tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE  
+    );`, (err, result) => {
+      if (err) {
+        console.error('Error making recipes_tags:', err);
+      } else {
+        console.log('Recipes_tags in!!');
+      }
+    }
+  );
+}
+
+setTimeout(createJoinTables, 2000);
+
+// promise to potentially handle node errors
+
+// process.on('unhandledRejection', error => {
+//   console.error('Unhandled Promise Rejection:', error);
+//   process.exit(1);
+// });
