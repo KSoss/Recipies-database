@@ -23,51 +23,7 @@ app.listen(port, function() {
   console.log('Listening on port', port);
 });
 
-app.get('/recipes', (req, res, next) => {
-  pool.query('SELECT * FROM recipes', (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(result.rows);
-  });
-});
-
-app.get('/ingredients', (req, res, next) => {
-  pool.query('SELECT * FROM ingredients', (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(result.rows);
-  });
-});
-
-app.get('/tags', (req, res, next) => {
-  pool.query('SELECT * FROM tags', (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(result.rows);
-  });
-});
-
-app.get('/RI', (req, res, next) => {
-  pool.query('SELECT * FROM recipes_ingredients', (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(result.rows);
-  });
-});
-
-app.get('/RT', (req, res, next) => {
-  pool.query('SELECT * FROM recipes_tags', (err, result) => {
-    if (err) {
-      return next(err);
-    }
-    res.json(result.rows);
-  });
-});
-
+// GET EVERY RECIPE USING JOIN
 app.get('/everything', (req, res, next) => {
 
   pool.query(`SELECT r.id, r.recipe AS recipe_name, r.cuisine,
@@ -86,6 +42,7 @@ app.get('/everything', (req, res, next) => {
   })
 })
 
+// GET RECIPE BY ID USING JOIN
 app.get('/recipes/:id', (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if(!Number.isInteger(id)) {
@@ -122,7 +79,7 @@ app.get('/recipes/:id', (req, res, next) => {
 })
 
 //Lord forgive me for what I must do
-
+// ADDING NEW RECIPE
 app.post('/recipes', async (req, res) => {
   try {
     const { recipe, cuisine, ingredients, tags } = req.body;
@@ -193,27 +150,71 @@ app.post('/recipes', async (req, res) => {
   }
 });
 
-// I want to sleep
-
-app.put('/recipes/:id', async (req, res) => {
+// Why are we here... just to suffer
+// UPDATE A RECIPE
+app.patch('/recipes/:id/recipe', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { recipe, cuisine, ingredients, tags } = req.body;
 
+    const { id } = req.params;
+    const { recipe, cuisine, ingredients, tags} = req.body;
+
+    console.log(tags)
     // Check if the recipe exists
     const recipeResult = await pool.query('SELECT * FROM recipes WHERE id = $1', [id]);
     if (recipeResult.rows.length === 0) {
-      return res.status(404).send('Recipe not found');
+      return res.status(404).send('This ID does not exist');
     }
 
-    // Update the recipe in the database
-    const recipeUpdateResult = await pool.query('UPDATE recipes SET recipe = $1, cuisine = $2 WHERE id = $3', [recipe, cuisine, id]);
-    console.log('recipe updated');
+    if (!recipe) {
+      console.log('no need to update recipe')
+    } else {
+    // Update the recipe name in the database
+    const recipeUpdateResult = await pool.query(`UPDATE recipes SET recipe = $1 WHERE id = $2`, [recipe, id]);
+    }
 
-    // Delete old recipe-ingredient relationships
+    if(!cuisine) {
+      console.log('no need to update cuisine')
+    } else {
+      const cuisineUpdateResult = await pool.query(`UPDATE recipes SET cuisine = $1 WHERE id = $2`, [cuisine, id]);
+    }
+    
+  if(!tags) {
+    console.log('no need to update tags')
+  } else {
+    // First delete the existing relationships between tags and recipes
+    await pool.query('DELETE FROM recipes_tags WHERE recipes_id = $1', [id]);
+    // Loop over tags array
+    for (let i = 0; i < tags.length; i++) {
+      // Get existing tag or create new tag if not made
+      const tag = tags[i];
+      const existingTag = await pool.query(`SELECT id FROM tags WHERE tag = $1`, [tag]);
+      // Current ID of tag
+      let tagId;
+      if (existingTag.rows.length) {
+        // if it already exists, we keep the tag ID
+        tagId = existingTag.rows[0].id;
+      } else {
+        // if tag doesn't exist, we make tag and get its ID
+        const newTag = await pool.query('INSERT INTO tags (tag) VALUES = ($1) ON CONFLIC DO NOTHING RETURNING id', [tag])
+      if (newTag.rows.length > 0) {
+        // New ID if made
+        tagId = newTag.row[0].id;
+        console.log(tagId)
+        }
+      }
+    // we now have a tag ID to use for recipes_tags
+      await pool.query('INSERT INTO recipes_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
+      console.log('recipe-tag relationship inserted')
+      }
+    // end of tags
+    }
+  
+  if (!ingredients) {
+    console.log('no need to update ingredients')
+  } else {
+    // First delete the existing ingredients for this recipe
     await pool.query('DELETE FROM recipes_ingredients WHERE recipes_id = $1', [id]);
-
-    // Insert new recipe-ingredient relationships
+    // Then insert the updated ingredients for this recipe
     for (let i = 0; i < ingredients.length; i++) {
       const ingredient = ingredients[i];
       if (ingredient !== '') {
@@ -235,41 +236,17 @@ app.put('/recipes/:id', async (req, res) => {
         }
       }
     }
+  }
 
-    // Delete old recipe-tag relationships
-    await pool.query('DELETE FROM recipes_tags WHERE recipes_id = $1', [id]);
+    res.send(`Recipe with ID ${id} has values ${recipe}, ${cuisine}, ${tags}, and these ingredients ${ingredients}`)
 
-    // Insert new recipe-tag relationships
-    for (let i = 0; i < tags.length; i++) {
-      const tag = tags[i];
-      if (tag !== '') {
-        const tagInsertResult = await pool.query(
-          'INSERT INTO tags (tag) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
-          [tag]
-        );
-        let tagId;
-        if (tagInsertResult.rows.length > 0) {
-          tagId = tagInsertResult.rows[0].id;
-        } else {
-          const existingTagResult = await pool.query('SELECT id FROM tags WHERE tag = $1', [tag]);
-          if (existingTagResult.rows.length > 0) {
-            tagId = (existingTagResult.rows[0].id);
-          }
-        }
-        if (tagId) {
-          await pool.query('INSERT INTO recipes_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
-        }
-      }
-    }
-
-    return res.status(200).send('Recipe updated successfully');
   } catch (err) {
     console.error(err);
     return res.status(500).send('Internal server error');
   }
 });
 
-
+// DELETE A RECIPE
 app.delete("/recipes/:id", (req, res, next) => {
   const id = Number.parseInt(req.params.id);
   if (!Number.isInteger(id)){
@@ -281,6 +258,56 @@ app.delete("/recipes/:id", (req, res, next) => {
     } else {
         res.send('DELETED!');
     }
+  });
+});
+
+// internal to check recipes
+app.get('/recipes', (req, res, next) => {
+  pool.query('SELECT * FROM recipes', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+// internal table to check on ingredients
+app.get('/ingredients', (req, res, next) => {
+  pool.query('SELECT * FROM ingredients', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+// internal table to check on tags table
+app.get('/tags', (req, res, next) => {
+  pool.query('SELECT * FROM tags', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+// internal table to check on recipes_ingredients table
+app.get('/RI', (req, res, next) => {
+  pool.query('SELECT * FROM recipes_ingredients', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
+  });
+});
+
+// internal table to check on recipes_tags table
+app.get('/RT', (req, res, next) => {
+  pool.query('SELECT * FROM recipes_tags', (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.json(result.rows);
   });
 });
 

@@ -3,23 +3,23 @@
 <head>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="recipeClient.js"></script>
+    <link rel="stylesheet" href="index.css">
   <title>recipe Catalog</title>
 </head>
 <body>
   <h1>Recipe Catalog</h1>
 
-
-
+  <!-- show all, pick by id, delete by id -->
   <ul id="recipe-list"></ul>
-  <input type="submit" id="showRecipe" value="Show recipes we know">
+  <input type="submit" id="showRecipe" class="button" value="Show recipes we know">
 
   <div>
-    <input type="submit" id="showRecipeID" value="Pick from id">
+    <input type="submit" id="showRecipeID" class="button" value="Pick from id">
     <input type="text" id="id-input" class="form" name="id-input">
   </div>
 
   <div>
-    <input type="submit" id="deleteButton" value="Delete by id">
+    <input type="submit" id="deleteButton" class="button" value="Delete by id">
     <input type="text" id="deleteForm" class="form" name="id-input">
   </div>
 
@@ -28,26 +28,55 @@
   <div id="add-recipe-form">
     <div>
       <label for="recipe-input">Recipe:</label>
-      <input type="text" id="recipe-input" class="recipe-input" name="recipe-input">
+      <input type="text" id="recipe-input" class="form" name="recipe-input">
     </div>
     <div>
       <label for="Cusine-input">Cusine:</label>
-      <input type="text" id="cuisine-input" class="Cusine-input" name="genre-input">
+      <input type="text" id="cuisine-input" class="form" name="genre-input">
     </div>
     <div>
       <label for="Ingredients-input">Ingredients:</label>
-      <input type="text" id="ingredient-input" class="ingredient-input" name="ingredient-input">
+      <input type="text" id="ingredient-input" class="form" name="ingredient-input">
     </div>
     <div>
       <label for="Tags-input">Tags:</label>
-      <input type="text" id="tag-input" class="tags-input" name="tags-input">
+      <input type="text" id="tag-input" class="form" name="tags-input">
     </div>
     <div>
-      <input id = "addRecipe" type="submit" value="Add recipe">
+      <input id = "addRecipe" type="submit" class="button" value="Add recipe">
     </div>
   </div>
 
-  <h2>Existing recipes</h2>
+  <!-- update recipe -->
+  <h2>Update a recipe</h2>
+
+  <div id="add-recipe-form">
+    <div>
+      <label for="id-search">Which ID?:</label>
+      <input type="text" id="id-update" class="form" name="recipe-input">
+    </div>
+    <div>
+      <label for="recipe-input">Recipe Name update?:</label>
+      <input type="text" id="recipe-update" class="form" name="recipe-input">
+    </div>
+    <div>
+      <label for="Cusine-input">Cusine update?:</label>
+      <input type="text" id="cuisine-update" class="form" name="genre-input">
+    </div>
+    <div>
+      <label for="Ingredients-input">Ingredients update?:</label>
+      <input type="text" id="ingredient-update" class="form" name="ingredient-input">
+    </div>
+    <div>
+      <label for="Tags-input">Tags update?:</label>
+      <input type="text" id="tag-update" class="form" name="tags-input">
+    </div>
+    <div>
+      <input id = "updateRecipe" type="submit" class="button" value="update!">
+    </div>
+  </div>
+
+  <h2>Results</h2>
 
   <div id="container" class="w3-container"></div>
 

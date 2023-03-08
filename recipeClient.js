@@ -80,6 +80,7 @@ function getAllRecipes() {
 //PREPARING ALL DATA FOR APPENDING BY SEPERATING
 function seperate(data) {
  
+// its a simple spell but quite unbreakable
 for (let i = 0; i < data.length; i++) {
     let { recipe_name, ingredients, tags, id } = data[i];
     pushRecipeInfo(recipe_name, ingredients, tags, id);

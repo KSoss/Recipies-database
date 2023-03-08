@@ -1,0 +1,23 @@
+body {
+    background-color: #ffb264;
+  }
+
+.button {
+  font-size: 1em;
+  cursor: pointer;
+  border-radius: 1em;
+}
+
+.button {
+  transition-duration: .25s;
+  background-color: rgb(206, 206, 206);
+}
+
+.button:active {
+  transform:scale(.9);
+  transition: 0s;
+}
+
+.form {
+  border-radius: 1em;
+}
