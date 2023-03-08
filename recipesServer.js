@@ -70,7 +70,7 @@ app.get('/RT', (req, res, next) => {
 
 app.get('/everything', (req, res, next) => {
 
-  pool.query(`SELECT r.recipe AS recipe_name, r.cuisine,
+  pool.query(`SELECT r.id, r.recipe AS recipe_name, r.cuisine,
   array_agg(DISTINCT i.ingredient) AS ingredients, 
   array_agg(DISTINCT t.tag) AS tags
   FROM recipes r
@@ -78,7 +78,7 @@ app.get('/everything', (req, res, next) => {
   LEFT JOIN ingredients i ON ri.ingredients_id = i.id
   LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
   LEFT JOIN tags t ON rt.tags_id = t.id
-  GROUP BY r.recipe;`, (err, result) => {
+  GROUP BY r.id, r.recipe, r.cuisine;`, (err, result) => {
     if (err) {
       return next(err);
     }
@@ -93,7 +93,7 @@ app.get('/recipes/:id', (req, res, next) => {
   }
   console.log("recipe: ", id);
 
-  pool.query(`SELECT r.recipe AS recipe_name, r.cuisine,
+  pool.query(`SELECT r.id, r.recipe AS recipe_name, r.cuisine,
   array_agg(DISTINCT i.ingredient) AS ingredients, 
   array_agg(DISTINCT t.tag) AS tags
   FROM recipes r
@@ -102,7 +102,7 @@ app.get('/recipes/:id', (req, res, next) => {
   LEFT JOIN recipes_tags rt ON r.id = rt.recipes_id
   LEFT JOIN tags t ON rt.tags_id = t.id
   WHERE r.id = $1
-  GROUP BY r.recipe;`, [id], (err, result) => {
+  GROUP BY r.id, r.recipe, r.cuisine;`, [id], (err, result) => {
     if (err) {
       return next(err);
     }
@@ -180,7 +180,7 @@ app.post('/recipes', async (req, res) => {
 
       // Create relationship between recipe and tag
       const recipeTagResult = await pool.query(
-        'INSERT INTO recipes_tags (recipe_id, tag_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM recipe_tags WHERE recipe_id = $1 AND tag_id = $2)',
+        'INSERT INTO recipes_tags (recipes_id, tags_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT * FROM recipes_tags WHERE recipes_id = $1 AND tags_id = $2)',
         [recipeId, tagId]
       );
       console.log('recipe-tag relationship inserted');
@@ -237,7 +237,7 @@ app.put('/recipes/:id', async (req, res) => {
     }
 
     // Delete old recipe-tag relationships
-    await pool.query('DELETE FROM recipe_tags WHERE recipes_id = $1', [id]);
+    await pool.query('DELETE FROM recipes_tags WHERE recipes_id = $1', [id]);
 
     // Insert new recipe-tag relationships
     for (let i = 0; i < tags.length; i++) {
@@ -257,7 +257,7 @@ app.put('/recipes/:id', async (req, res) => {
           }
         }
         if (tagId) {
-          await pool.query('INSERT INTO recipe_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
+          await pool.query('INSERT INTO recipes_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
         }
       }
     }

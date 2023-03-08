@@ -8,33 +8,48 @@
 <body>
   <h1>Recipe Catalog</h1>
 
-  <!-- display existing recipe -->
+
 
   <ul id="recipe-list"></ul>
-  <input type="submit" id="showrecipe" value="Show recipes we know">
+  <input type="submit" id="showRecipe" value="Show recipes we know">
+
+  <div>
+    <input type="submit" id="showRecipeID" value="Pick from id">
+    <input type="text" id="id-input" class="form" name="id-input">
+  </div>
+
+  <div>
+    <input type="submit" id="deleteButton" value="Delete by id">
+    <input type="text" id="deleteForm" class="form" name="id-input">
+  </div>
 
   <!-- add new recipe -->
   <h2>Add New recipe</h2>
-  <form id="add-recipe-form">
+  <div id="add-recipe-form">
     <div>
       <label for="recipe-input">Recipe:</label>
-      <input type="text" id="recipe-input" name="recipe-input">
+      <input type="text" id="recipe-input" class="recipe-input" name="recipe-input">
     </div>
     <div>
       <label for="Cusine-input">Cusine:</label>
-      <input type="text" id="Cusine-input" name="genre-input">
+      <input type="text" id="cuisine-input" class="Cusine-input" name="genre-input">
     </div>
     <div>
       <label for="Ingredients-input">Ingredients:</label>
-      <input type="text" id="ingredient-input" name="ingredient-input">
+      <input type="text" id="ingredient-input" class="ingredient-input" name="ingredient-input">
     </div>
     <div>
-      <input id = "addrecipe" type="submit" value="Add recipe">
+      <label for="Tags-input">Tags:</label>
+      <input type="text" id="tag-input" class="tags-input" name="tags-input">
     </div>
-  </form>
+    <div>
+      <input id = "addRecipe" type="submit" value="Add recipe">
+    </div>
+  </div>
 
   <h2>Existing recipes</h2>
-    <div id="container" class="container"></div>
+
+  <div id="container" class="w3-container"></div>
 
   
 </body>

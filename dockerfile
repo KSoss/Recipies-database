@@ -1,5 +1,5 @@
 FROM node:18.7.0
-WORKDIR C:\Users\kdsos\repos\recipies-database
+WORKDIR C:\Users\kdsos\repos\recipes-database
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
