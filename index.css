@@ -6,14 +6,20 @@
   text-align: center;
   font-size: 3em;
   cursor: pointer;
+  
 }
 
 .showDiv{
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 2px solid black;
   height: 100px;
+  background-color: rgb(255, 255, 255);
+  width: 500px;
+  border-radius: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .advanced-hidden {
@@ -21,7 +27,7 @@
 }
 
 body {
-    background-color: #ffb264;
+    background-color: #957ea0;
   }
 
 .button {
@@ -29,6 +35,7 @@ body {
   cursor: pointer;
   border-radius: 1em;
   margin: 4px;
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .button {
@@ -46,12 +53,24 @@ body {
   border-radius: 1em;
   margin: 1px;
   height: 25px;
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.w3-container{
+  display: flex;
+  flex-wrap: wrap; 
 }
 
 .foodcard {
   border: 2px solid black;
   justify-content: center;
   align-items: center;
+  width: 300px;
+  padding: 10px;
+  margin: 10px;
+  border: 3px solid #ccc;
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
 }
 
 .american {
@@ -64,6 +83,7 @@ body {
   justify-content: center;
   margin: 5px;
   border-radius: 1em;
+  box-shadow: 0 8px 8px 0 rgba(0, 0, 0, 0.2);
 }
 
 .italian {
@@ -75,3 +95,4 @@ body {
   border-radius: 1em;
   border: 4px solid black;
 }
+
