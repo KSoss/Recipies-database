@@ -118,7 +118,6 @@ app.post('/recipes', async (req, res) => {
   }
    
   // Insert the tags into the database and create relationships with the recipe
-  const tagIds = [];
   for (let i = 0; i < tags.length; i++) {
     if (tags[i] !== '') {
       const tagInsertResult = await pool.query(
@@ -152,19 +151,20 @@ app.post('/recipes', async (req, res) => {
 
 // Why are we here... just to suffer
 // UPDATE A RECIPE
-app.patch('/recipes/:id/recipe', async (req, res) => {
+app.patch('/recipes/:id', async (req, res) => {
   try {
 
+    //VARIABLE CREATION
     const { id } = req.params;
     const { recipe, cuisine, ingredients, tags} = req.body;
-
-    console.log(tags)
-    // Check if the recipe exists
+    
+    //CHECK IF RECPIE EXISTS, ERROR IF IT EXISTS
     const recipeResult = await pool.query('SELECT * FROM recipes WHERE id = $1', [id]);
     if (recipeResult.rows.length === 0) {
       return res.status(404).send('This ID does not exist');
     }
 
+    //RECIPE CHECK AND UPDATE
     if (!recipe) {
       console.log('no need to update recipe')
     } else {
@@ -172,44 +172,38 @@ app.patch('/recipes/:id/recipe', async (req, res) => {
     const recipeUpdateResult = await pool.query(`UPDATE recipes SET recipe = $1 WHERE id = $2`, [recipe, id]);
     }
 
+    //CUISINE CHECK AND UPDATE
     if(!cuisine) {
       console.log('no need to update cuisine')
     } else {
       const cuisineUpdateResult = await pool.query(`UPDATE recipes SET cuisine = $1 WHERE id = $2`, [cuisine, id]);
     }
     
-  if(!tags) {
-    console.log('no need to update tags')
-  } else {
-    // First delete the existing relationships between tags and recipes
-    await pool.query('DELETE FROM recipes_tags WHERE recipes_id = $1', [id]);
-    // Loop over tags array
-    for (let i = 0; i < tags.length; i++) {
-      // Get existing tag or create new tag if not made
-      const tag = tags[i];
-      const existingTag = await pool.query(`SELECT id FROM tags WHERE tag = $1`, [tag]);
-      // Current ID of tag
-      let tagId;
-      if (existingTag.rows.length) {
-        // if it already exists, we keep the tag ID
-        tagId = existingTag.rows[0].id;
-      } else {
-        // if tag doesn't exist, we make tag and get its ID
-        const newTag = await pool.query('INSERT INTO tags (tag) VALUES = ($1) ON CONFLIC DO NOTHING RETURNING id', [tag])
-      if (newTag.rows.length > 0) {
-        // New ID if made
-        tagId = newTag.row[0].id;
-        console.log(tagId)
+    // TAGS CHECK AND UPDATE
+    if(tags.length < 1) {
+      console.log('no need to update tags')
+    } else {
+      // First delete the existing relationships between tags and recipes
+      await pool.query('DELETE FROM recipes_tags WHERE recipes_id = $1', [id]);
+      // Loop over tags array
+      for (let i = 0; i < tags.length; i++) {
+        // Get existing tag or create new tag if not made
+        const tag = tags[i];
+        let tagId;
+        const existingTagResult = await pool.query('SELECT id FROM tags WHERE tag = $1', [tag]);
+        if (existingTagResult.rows.length > 0) {
+          tagId = existingTagResult.rows[0].id;
+        } else {
+          const newTagResult = await pool.query('INSERT INTO tags (tag) VALUES ($1) RETURNING id', [tag]);
+          tagId = newTagResult.rows[0].id;
         }
+        await pool.query('INSERT INTO recipes_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
+        console.log('recipe-tag relationship inserted');
       }
-    // we now have a tag ID to use for recipes_tags
-      await pool.query('INSERT INTO recipes_tags (recipes_id, tags_id) VALUES ($1, $2)', [id, tagId]);
-      console.log('recipe-tag relationship inserted')
-      }
-    // end of tags
     }
   
-  if (!ingredients) {
+  // INGREDIENTS CHECK UPDATE
+  if (ingredients.length < 1) {
     console.log('no need to update ingredients')
   } else {
     // First delete the existing ingredients for this recipe
@@ -218,28 +212,29 @@ app.patch('/recipes/:id/recipe', async (req, res) => {
     for (let i = 0; i < ingredients.length; i++) {
       const ingredient = ingredients[i];
       if (ingredient !== '') {
-        const ingredientInsertResult = await pool.query(
-          'INSERT INTO ingredients (ingredient) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id',
-          [ingredient]
-        );
+        // Check if ingredient already exists in ingredients table
+        const existingIngredientResult = await pool.query('SELECT id FROM ingredients WHERE ingredient = $1', [ingredient]);
         let ingredientId;
-        if (ingredientInsertResult.rows.length > 0) {
-          ingredientId = ingredientInsertResult.rows[0].id;
+        if (existingIngredientResult.rows.length > 0) {
+          ingredientId = existingIngredientResult.rows[0].id;
         } else {
-          const existingIngredientResult = await pool.query('SELECT id FROM ingredients WHERE ingredient = $1', [ingredient]);
-          if (existingIngredientResult.rows.length > 0) {
-            ingredientId = existingIngredientResult.rows[0].id;
-          }
+          // Insert new ingredient into ingredients table
+          const ingredientInsertResult = await pool.query(
+            'INSERT INTO ingredients (ingredient) VALUES ($1) RETURNING id',
+            [ingredient]
+          );
+          ingredientId = ingredientInsertResult.rows[0].id;
         }
-        if (ingredientId) {
-          await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', [id, ingredientId]);
-        }
+        // Insert relationship between recipe and ingredient
+        await pool.query('INSERT INTO recipes_ingredients (recipes_id, ingredients_id) VALUES ($1, $2)', [id, ingredientId]);
       }
     }
+    // Log any new ingredients that were inserted
   }
 
-    res.send(`Recipe with ID ${id} has values ${recipe}, ${cuisine}, ${tags}, and these ingredients ${ingredients}`)
+    res.send(`Recipe updated!`)
 
+  
   } catch (err) {
     console.error(err);
     return res.status(500).send('Internal server error');

@@ -4,10 +4,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="recipeClient.js"></script>
     <link rel="stylesheet" href="index.css">
+    <style> @import url('https://fonts.googleapis.com/css2?family=Itim&family=Work+Sans:wght@200;300;400;500;600&display=swap');</style>
   <title>recipe Catalog</title>
 </head>
 <body>
-  <h1>Recipe Catalog</h1>
+  <h1 class="mainHead">Recipe Catalog</h1>
 
   <!-- show all, pick by id, delete by id -->
   <ul id="recipe-list"></ul>
@@ -50,7 +51,7 @@
   <!-- update recipe -->
   <h2>Update a recipe</h2>
 
-  <div id="add-recipe-form">
+  <div id="update-recipe-form">
     <div>
       <label for="id-search">Which ID?:</label>
       <input type="text" id="id-update" class="form" name="recipe-input">
