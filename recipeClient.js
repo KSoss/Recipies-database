@@ -253,19 +253,30 @@ function seperate(data) {
  
   // its a simple spell but quite unbreakable
   for (let i = 0; i < data.length; i++) {
-      let { recipe_name, ingredients, tags, id } = data[i];
-      pushRecipeInfo(recipe_name, ingredients, tags, id);
+      let { recipe_name, ingredients, tags, id, cuisine } = data[i];
+      pushRecipeInfo(recipe_name, ingredients, tags, id, cuisine);
       }
   }
   
 //APPEND DATA TO PAGE FUNCTION
 function pushRecipeInfo(recipe_name, ingredients, tags, id, cuisine) {
   
-      let $foodcard = $('<div></div>');
+      let $foodcard = $('<div></div>').addClass('foodcard');
       
       let $heading = $('<h3></h3>');
       $heading.text(id + '. ' + recipe_name);
       $foodcard.append($heading)
+
+      let $cuisine = $('<h4></h4>');
+      $cuisine.text(cuisine);
+        if (cuisine === 'American') {
+          $cuisine.addClass('american')
+        } else if (cuisine === 'Italian') {
+          $cuisine.addClass('italian')
+        } else {
+          $cuisine.addClass('generic')
+        }
+      $foodcard.append($cuisine)
       
       let $ingredients = $('<p></p>');
       $ingredients.text('Ingredients: ' + ingredients.join(', '));
