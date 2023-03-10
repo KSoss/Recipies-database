@@ -79,7 +79,7 @@ app.get('/recipes/:id', (req, res, next) => {
 })
 
 //Lord forgive me for what I must do
-// ADDING NEW RECIPE
+// POST/ADDING NEW RECIPE
 app.post('/recipes', async (req, res) => {
   try {
     const { recipe, cuisine, ingredients, tags } = req.body;
@@ -150,7 +150,7 @@ app.post('/recipes', async (req, res) => {
 });
 
 // Why are we here... just to suffer
-// UPDATE A RECIPE
+// PATCH/UPDATE A RECIPE
 app.patch('/recipes/:id', async (req, res) => {
   try {
 
